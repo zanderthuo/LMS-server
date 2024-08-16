@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import bcrypt from 'bcryptjs'
 import JWT from 'jsonwebtoken'
 import crypto from 'crypto'
@@ -42,15 +42,13 @@ const userSchema = new Schema({
     forgotPasswordToken: String,
     forgotPasswordExpiry: Date,
     subscription: {
-        id: {
-            type: String,
-            default: null
-        },
-        status: {
-            type: String,
-            default: 'active' // Set subscription status to 'active' by default
-        }
-    }
+        id: String,
+        status: String,
+    },
+    progress: [{
+        courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+        progress: { type: Number, required: true },
+    }],
 }, { timestamps: true })
 
 userSchema.pre('save', async function (next) {

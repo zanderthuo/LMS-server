@@ -3,6 +3,9 @@ import User from '../models/userModel.js'
 import { razorpay } from '../server.js'
 import createError from '../utils/error.js'
 import crypto from 'crypto'
+import https from 'https'
+import axios from 'axios'
+
 
 
 export const getRazorpayKey = async (req, res, next) => {
@@ -223,5 +226,59 @@ export const allPayments = async (req, res, next) => {
         });
     } catch (error) {
         return next(createError(500, error.message));
+    }
+};
+
+export const createMpesaCharge = async (req, res) => {
+    const { email, amount, phoneNumber } = req.body;
+
+    try {
+        const response = await axios.post('https://api.paystack.co/charge', {
+            amount: amount * 100, // Amount should be in kobo
+            email: email,
+            currency: 'KES',
+            mobile_money: {
+                phone: phoneNumber,
+                provider: 'mpesa'
+            }
+        }, {
+            headers: {
+                'Authorization': `Bearer YOUR_SECRET_KEY`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({
+            statusCode: 500,
+            body: {},
+            message: 'An error occurred while creating the charge.'
+        });
+    }
+}
+
+export const handleMpesaWebhook = async (req, res) => {
+    try {
+        const webhookData = req.body;
+
+        // Log or process the webhook data
+        console.log('Received M-Pesa webhook:', webhookData);
+
+        // Example: Handle payment status update
+        if (webhookData.status === 'SUCCESS') {
+            // Update payment status in your database
+            // For example, find the payment record and update it
+            // await PaymentModel.update({ status: 'completed' }, { where: { id: webhookData.transactionId } });
+        } else if (webhookData.status === 'FAILED') {
+            // Handle failed payment
+            // await PaymentModel.update({ status: 'failed' }, { where: { id: webhookData.transactionId } });
+        }
+
+        // Respond to M-Pesa to acknowledge receipt
+        res.status(200).send({ message: 'Webhook received successfully' });
+    } catch (error) {
+        console.error('Error handling M-Pesa webhook:', error);
+        res.status(500).send({ message: 'Error processing webhook' });
     }
 };

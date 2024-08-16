@@ -3,6 +3,7 @@ import createError from '../utils/error.js'
 import { v2 } from 'cloudinary'
 import fs from 'fs/promises'
 import { myCache } from '../app.js';
+import User from '../models/userModel.js';
 
 export const getAllCourses = async (req, res, next) => {
     try {
@@ -308,6 +309,56 @@ export const deleteLectures = async (req, res, next) => {
             success: true,
             message: "Lecture deleted successfully",
             lectures: course.lectures
+        });
+    } catch (error) {
+        return next(createError(500, error.message));
+    }
+};
+
+// Update progress
+export const updateProgress = async (req, res, next) => {
+    try {
+        const { courseId, lectureId, timestamp } = req.body;
+        const userId = req.user.id;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return next(createError(404, "User not found"));
+        }
+
+        const progressIndex = user.progress.findIndex(p => p.courseId.toString() === courseId);
+        if (progressIndex > -1) {
+            user.progress[progressIndex] = { courseId, lectureId, timestamp };
+        } else {
+            user.progress.push({ courseId, lectureId, timestamp });
+        }
+
+        await user.save();
+        res.status(200).json({
+            success: true,
+            message: "Progress updated successfully"
+        });
+    } catch (error) {
+        return next(createError(500, error.message));
+    }
+};
+
+// Get progress
+export const getProgress = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return next(createError(404, "User not found"));
+        }
+
+        const progress = user.progress.find(p => p.courseId.toString() === req.params.courseId);
+        console.log('progress',progress)
+        res.status(200).json({
+            success: true,
+            message: "Progress fetched successfully",
+            progress
         });
     } catch (error) {
         return next(createError(500, error.message));

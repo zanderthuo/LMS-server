@@ -3,7 +3,6 @@ import { connectDb } from './database/db.js'
 import { v2 as cloudinary } from 'cloudinary';
 import Razorpay from 'razorpay'
 
-
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.API_KEY,

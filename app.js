@@ -6,6 +6,7 @@ import userRoutes from './routes/userRoutes.js'
 import courseRoutes from './routes/courseRoutes.js'
 import paymentRoutes from './routes/paymentRoutes.js'
 import miscRoutes from './routes/miscellaneousRoutes.js'
+import subscriptionRoutes from './routes/subscriptionRoutes.js'
 import errorMiddleware from './middleware/errorMiddleware.js'
 import NodeCache from 'node-cache'
 
@@ -24,6 +25,7 @@ app.use("/api/v1/user", userRoutes)
 app.use("/api/v1/course", courseRoutes)
 app.use("/api/v1/payments", paymentRoutes)
 app.use("/api/v1", miscRoutes)
+app.use('/api/v1/subscription', subscriptionRoutes);
 
 app.use("/ping", (req, res) => {
     res.send("Server is working")
